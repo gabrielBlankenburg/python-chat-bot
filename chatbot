@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-	
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+	
+bot = ChatBot(
+	'Jimmy',
+	storage_adapter='chatterbot.storage.SQLStorageAdapter',
+	logic_adapters=[
+	    {
+            "import_path": "chatterbot.logic.BestMatch",
+            "statement_comparison_function": "chatterbot.comparisons.levenshtein_distance",
+            "response_selection_method": "chatterbot.response_selection.get_first_response"
+        },
+        {
+            'import_path': 'chatterbot.logic.LowConfidenceAdapter',
+            'threshold': 0.55,
+            'default_response': 'Não entendi'
+        },
+	],
+	trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
+	output_adapter="chatterbot.output.OutputAdapter",
+    output_format="text",
+	database='./database.sqlite3'
+)
+
+bot.train('chatterbot.corpus.portuguese')
+
+while True:
+    try:
+    	message = unicode(raw_input('You: '))
+    	response = unicode(bot.get_response(message))
+    	print("Bot: " + str(response))
+
+    except(KeyboardInterrupt, EOFError, SystemExit):
+        break
